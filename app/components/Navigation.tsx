@@ -4,7 +4,9 @@ import {
   ImagePlus,
   LayoutTemplate,
   PenLine,
+  PencilRuler,
   Shapes,
+  SwatchBook,
   Sparkles,
 } from "lucide-react";
 import type { AppView } from "../lib/types";
@@ -16,10 +18,12 @@ interface NavigationProps {
 
 const studioItems = [
   { id: "templates" as const, label: "Templates", icon: LayoutTemplate },
+  { id: "sketchup" as const, label: "Sketchup", icon: PencilRuler },
   { id: "editor" as const, label: "Éditeur", icon: PenLine },
   { id: "logos" as const, label: "Générateur de logos", icon: Shapes },
   { id: "images" as const, label: "Générateur d’images", icon: ImagePlus },
   { id: "texts" as const, label: "Générateur de textes", icon: Sparkles },
+  { id: "brand" as const, label: "Brand Kit", icon: SwatchBook },
 ];
 
 const spaceItems = [
