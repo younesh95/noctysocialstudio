@@ -2,7 +2,7 @@ export type Network = "instagram" | "x" | "tiktok" | "facebook";
 export type ContentKind = "image" | "texte";
 export type WorkStatus = "debute" | "en_cours" | "finie";
 export type TemplateSource = "json" | "image";
-export type StudioView = "templates" | "editor" | "logos" | "images" | "texts";
+export type StudioView = "templates" | "sketchup" | "editor" | "logos" | "images" | "texts";
 export type SpaceView = "creations" | "calendar";
 export type AppView = StudioView | SpaceView;
 
@@ -29,6 +29,55 @@ export interface Creation {
   taskId: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface SocialFormat {
+  id: string;
+  label: string;
+  usage: string;
+  width: number;
+  height: number;
+  ratio: string;
+  recommended?: boolean;
+}
+
+export type CanvasElementType = "text" | "shape" | "image";
+
+export interface CanvasElement {
+  id: string;
+  type: CanvasElementType;
+  name: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
+  fill?: string;
+  text?: string;
+  fontSize?: number;
+  fontWeight?: number;
+  align?: "left" | "center" | "right";
+  src?: string;
+  radius?: number;
+}
+
+export interface CanvasDocument {
+  version: 1;
+  width: number;
+  height: number;
+  background: string;
+  formatId: string;
+  elements: CanvasElement[];
+}
+
+export interface CreationPayload {
+  canvas?: CanvasDocument;
+  title?: string;
+  opponent?: string;
+  result?: string;
+  assetUrl?: string;
+  formatId?: string;
 }
 
 export interface ExternalTemplateConfig {

@@ -5,32 +5,47 @@ import {
   ArrowUpRight,
   CalendarCheck,
   CalendarDays,
+  CheckSquare,
   ChevronLeft,
   ChevronRight,
   Clock3,
   ExternalLink,
   FileText,
+  FileArchive,
+  FileDown,
   Filter,
   Image as ImageIcon,
   LayoutGrid,
   List,
   Plus,
+  Pencil,
   Search,
+  Square,
+  Trash2,
   X,
 } from "lucide-react";
 import { deadlineFor, formatDate, googleCalendarUrl, NETWORKS, priorityFor, STATUS_LABELS } from "../lib/noctys";
+import { exportCreationsPdf, exportCreationsZip } from "../lib/exports";
 import type { ContentKind, Creation, Network, Task, TaskDraft, WorkStatus } from "../lib/types";
 
 interface CreationsProps {
   creations: Creation[];
   onOpen: (creation: Creation) => void;
+  onEdit: (creation: Creation) => void;
+  onDelete: (creation: Creation) => Promise<void>;
 }
 
-export function CreationsView({ creations, onOpen }: CreationsProps) {
+export function CreationsView({ creations, onOpen, onEdit, onDelete }: CreationsProps) {
   const [query, setQuery] = useState("");
   const [network, setNetwork] = useState<Network | "all">("all");
   const [layout, setLayout] = useState<"grid" | "list">("grid");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [exporting,setExporting]=useState<"pdf"|"zip">();
   const filtered = creations.filter((item) => (network === "all" || item.network === network) && item.title.toLowerCase().includes(query.toLowerCase()));
+  const chosen=creations.filter((item)=>selected.has(item.id));
+  const toggle=(id:string)=>setSelected((current)=>{const next=new Set(current);if(next.has(id))next.delete(id);else next.add(id);return next});
+  const toggleAll=()=>setSelected((current)=>filtered.every((item)=>current.has(item.id))?new Set():new Set([...current,...filtered.map((item)=>item.id)]));
+  const runExport=async(type:"pdf"|"zip")=>{const items=chosen.length?chosen:filtered;if(!items.length)return;setExporting(type);try{if(type==="pdf")await exportCreationsPdf(items);else await exportCreationsZip(items)}catch{window.alert("L’export n’a pas pu être généré. Réessayez après avoir enregistré les créations.")}finally{setExporting(undefined)}};
 
   return (
     <div className="view-stack fade-in">
@@ -43,11 +58,16 @@ export function CreationsView({ creations, onOpen }: CreationsProps) {
         <label className="search-box"><Search size={15}/><input value={query} onChange={(event)=>setQuery(event.target.value)} placeholder="Rechercher une création…"/></label>
         <div className="filter-row"><Filter size={14}/><select value={network} onChange={(event)=>setNetwork(event.target.value as Network|"all")}><option value="all">Tous les réseaux</option>{(Object.keys(NETWORKS) as Network[]).map((item)=><option key={item} value={item}>{NETWORKS[item].label}</option>)}</select></div>
         <div className="layout-toggle"><button className={layout==="grid"?"active":""} onClick={()=>setLayout("grid")} aria-label="Affichage en grille"><LayoutGrid size={15}/></button><button className={layout==="list"?"active":""} onClick={()=>setLayout("list")} aria-label="Affichage en liste"><List size={15}/></button></div>
+        <button className="select-all-button" onClick={toggleAll}>{filtered.length&&filtered.every((item)=>selected.has(item.id))?<CheckSquare size={14}/>:<Square size={14}/>} Tout sélectionner</button>
       </div>
+
+      <div className="bulk-export"><div><strong>{chosen.length||filtered.length}</strong><span>{chosen.length?"création(s) sélectionnée(s)":"création(s) visible(s)"} · choisissez un export</span></div><button onClick={()=>void runExport("pdf")} disabled={Boolean(exporting)}>{exporting==="pdf"?<Clock3 size={14}/>:<FileDown size={14}/>} PDF multipage</button><button onClick={()=>void runExport("zip")} disabled={Boolean(exporting)}>{exporting==="zip"?<Clock3 size={14}/>:<FileArchive size={14}/>} Pack ZIP</button></div>
 
       {filtered.length ? <section className={`creation-grid ${layout}`}>
         {filtered.map((creation) => (
-          <button className="creation-card" key={creation.id} onClick={() => onOpen(creation)}>
+          <article className={`creation-card ${selected.has(creation.id)?"is-selected":""}`} key={creation.id}>
+            <button className="creation-select" onClick={()=>toggle(creation.id)} aria-label={`Sélectionner ${creation.title}`}>{selected.has(creation.id)?<CheckSquare size={16}/>:<Square size={16}/>}</button>
+            <button className="creation-card-main" onClick={() => onOpen(creation)}>
             <div className={`creation-cover cover-${creation.template}`}>
               <div className="cover-grid"/>
               <span className="network-badge">{NETWORKS[creation.network].short}</span>
@@ -59,7 +79,9 @@ export function CreationsView({ creations, onOpen }: CreationsProps) {
               <h3>{creation.title}</h3><p>{NETWORKS[creation.network].label} · {creation.kind}</p>
               <span className="open-creation">Ouvrir <ArrowUpRight size={13}/></span>
             </div>
-          </button>
+            </button>
+            <div className="creation-card-actions"><button onClick={()=>onEdit(creation)}><Pencil size={13}/> Modifier</button><button className="delete" onClick={()=>void onDelete(creation)}><Trash2 size={13}/> Supprimer</button></div>
+          </article>
         ))}
       </section> : <div className="empty-library"><Search size={28}/><strong>AUCUNE CRÉATION TROUVÉE</strong><span>Modifiez vos filtres ou démarrez un nouveau template.</span></div>}
     </div>

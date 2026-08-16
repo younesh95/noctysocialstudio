@@ -4,12 +4,14 @@ Application de production social media pour TEAM NOCTYS : création de templates
 
 ## Fonctionnalités
 
-- Templates Instagram, X, TikTok et Facebook avec sauvegarde automatique
+- Créateur de templates préremplis ou vierges, avec formats Instagram, X, TikTok et Facebook et dimensions personnalisées
+- Éditeur graphique Sketchup sur canvas : texte, formes, images, calques, déplacement, duplication, annulation et sauvegarde
 - Import direct de templates PNG, JPG, WebP ou manifeste NOCTYS JSON, stockés dans R2
 - Éditeur de textes avec aperçu social et limites par réseau
 - Génération réelle de textes, logos et images avec OpenAI ou Gemini lorsque la clé serveur correspondante est configurée
 - Repli automatique sur un mode démo explicite lorsqu’aucune clé n’est présente
-- Bibliothèque « Mes créations » filtrable
+- Bibliothèque « Mes créations » filtrable, avec modification dans Sketchup et suppression confirmée
+- Sélection multiple et export local en PDF ou archive ZIP (visuels PNG, textes et manifeste)
 - Calendrier éditorial et création de tâches
 - Statuts Débuté / En cours / Finie et priorité calculée depuis la veille de publication
 - Ajout direct des publications dans Google Agenda

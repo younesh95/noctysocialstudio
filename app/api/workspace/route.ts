@@ -1,4 +1,5 @@
 import { ensureWorkspaceSchema, getWorkspaceDb, listWorkspace, seedDemoIfEmpty, toCreation, toTask } from "../../../db/workspace";
+import { canvasBody, createCanvasDocument, defaultFormat } from "../../lib/canvas";
 import type { ContentKind, Network, WorkStatus } from "../../lib/types";
 
 const networks: Network[] = ["instagram","x","tiktok","facebook"];
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
       if (!name || !kinds.includes(kind) || !networks.includes(network) || !isDate(publishAt)) return Response.json({error:"Données de tâche invalides"},{status:400});
       const id=crypto.randomUUID(),creationId=crypto.randomUUID(),createdAt=new Date().toISOString();
       const template = kind === "texte" ? "social-copy" : `social-${network}`;
-      const body = kind === "texte" ? `Publication ${name} — ${network}` : JSON.stringify({title:name,network});
+      const body = kind === "texte" ? `Publication ${name} — ${network}` : canvasBody(createCanvasDocument(defaultFormat(network),"match",name,"NOCTYS · PUBLICATION PLANIFIÉE"),{title:name});
       await db.batch([
         db.prepare("INSERT INTO tasks (id,name,kind,network,publish_at,status,creation_id,created_at) VALUES (?,?,?,?,?,'debute',?,?)").bind(id,name,kind,network,publishAt,creationId,createdAt),
         db.prepare("INSERT INTO creations (id,title,network,kind,status,publish_at,template,body,task_id,created_at,updated_at) VALUES (?,?,?,?,'debute',?,?,?,?,?,?)").bind(creationId,name,network,kind,publishAt,template,body,id,createdAt,createdAt),
@@ -49,6 +50,17 @@ export async function POST(request: Request) {
       if(!id||!statuses.includes(status))return Response.json({error:"Statut invalide"},{status:400});
       await db.batch([db.prepare("UPDATE tasks SET status=? WHERE id=?").bind(status,id),db.prepare("UPDATE creations SET status=?,updated_at=? WHERE task_id=?").bind(status,new Date().toISOString(),id)]);
       return Response.json({ok:true});
+    }
+    if(payload.action === "delete_creation"){
+      const id=clean(payload.id);
+      if(!id)return Response.json({error:"Création invalide"},{status:400});
+      const row=await db.prepare("SELECT task_id FROM creations WHERE id=?").bind(id).first<{task_id:string|null}>();
+      if(!row)return Response.json({error:"Création introuvable"},{status:404});
+      await db.batch([
+        db.prepare("UPDATE tasks SET creation_id=NULL WHERE creation_id=?").bind(id),
+        db.prepare("DELETE FROM creations WHERE id=?").bind(id),
+      ]);
+      return Response.json({ok:true,taskId:row.task_id});
     }
     return Response.json({error:"Action inconnue"},{status:400});
   } catch (error) {

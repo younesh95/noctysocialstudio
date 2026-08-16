@@ -25,7 +25,7 @@ interface StudioProps {
   notify: (message: string) => void;
 }
 
-async function saveCreation(payload: Partial<Creation> & Pick<Creation, "title" | "network" | "kind" | "template" | "body">) {
+export async function saveCreation(payload: Partial<Creation> & Pick<Creation, "title" | "network" | "kind" | "template" | "body">) {
   const response = await fetch("/api/workspace", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

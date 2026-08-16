@@ -47,3 +47,26 @@ test("keeps provider secrets server-side and provisions persistent imports", asy
   assert.equal(JSON.parse(hosting).r2, "TEMPLATE_ASSETS");
   assert.equal(JSON.parse(example).network, "instagram");
 });
+
+test("ships the multi-format builder, canvas editor and bulk exports", async () => {
+  const [formats, builder, sketchup, creations, exportsSource, workspaceRoute] = await Promise.all([
+    readFile(new URL("../app/lib/noctys.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/TemplateBuilder.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/SketchupView.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/SpaceViews.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/exports.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/workspace/route.ts", import.meta.url), "utf8"),
+  ]);
+
+  for (const network of ["instagram", "x", "tiktok", "facebook"]) assert.match(formats, new RegExp(`${network}:\\s*\\[`));
+  for (const dimension of ["width:1080,height:1920", "width:1200,height:628", "width:1080,height:1350"]) assert.match(formats, new RegExp(dimension));
+  assert.match(builder, /Dimensions personnalisées/);
+  assert.match(builder, /Canvas vierge/);
+  assert.match(sketchup, /SKETCH/);
+  assert.match(sketchup, /Ctrl\/⌘ \+ S/);
+  assert.match(creations, /exportCreationsPdf/);
+  assert.match(creations, /exportCreationsZip/);
+  assert.match(exportsSource, /application\/pdf/);
+  assert.match(exportsSource, /application\/zip/);
+  assert.match(workspaceRoute, /delete_creation/);
+});
