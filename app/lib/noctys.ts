@@ -1,4 +1,4 @@
-import type { AppView, Network, SocialFormat, Task, WorkStatus } from "./types";
+import type { ApprovalStatus, AppView, Network, SocialFormat, Task, WorkStatus } from "./types";
 
 export const SOCIAL_FORMATS: Record<Network, SocialFormat[]> = {
   instagram: [
@@ -40,6 +40,7 @@ export const VIEW_LABELS: Record<AppView, { section: "Studio" | "Espace"; title:
   logos: { section: "Studio", title: "Générateur de logos" },
   images: { section: "Studio", title: "Générateur d’images" },
   texts: { section: "Studio", title: "Générateur de textes" },
+  brand: { section: "Studio", title: "Brand Kit" },
   creations: { section: "Espace", title: "Mes créations" },
   calendar: { section: "Espace", title: "Calendrier" },
 };
@@ -48,6 +49,14 @@ export const STATUS_LABELS: Record<WorkStatus, string> = {
   debute: "Débuté",
   en_cours: "En cours",
   finie: "Finie",
+};
+
+export const APPROVAL_LABELS: Record<ApprovalStatus, string> = {
+  draft: "Brouillon",
+  review: "À valider",
+  approved: "Approuvée",
+  scheduled: "Planifiée",
+  published: "Publiée",
 };
 
 export function formatDate(value: string | null, options?: Intl.DateTimeFormatOptions) {

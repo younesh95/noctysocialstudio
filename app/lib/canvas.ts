@@ -1,22 +1,28 @@
 import { SOCIAL_FORMATS } from "./noctys";
-import type { CanvasDocument, CanvasElement, Creation, CreationPayload, Network, SocialFormat } from "./types";
+import type { BrandSettings, CanvasDocument, CanvasElement, Creation, CreationPayload, Network, SocialFormat } from "./types";
 
 const PURPLE = "#9C58C2";
 
-export function createCanvasDocument(format: SocialFormat, preset: "match"|"victory"|"roster"|"blank", title = "MATCH NIGHT", subtitle = "NOCTYS · CS2"): CanvasDocument {
+export function createCanvasDocument(format: SocialFormat, preset: "match"|"victory"|"roster"|"blank", title = "MATCH NIGHT", subtitle = "NOCTYS · CS2", brand?: Partial<BrandSettings>): CanvasDocument {
   const { width, height } = format;
-  if (preset === "blank") return { version:1,width,height,background:"#08070A",formatId:format.id,elements:[] };
+  const accent = brand?.primaryColor || PURPLE;
+  const background = brand?.backgroundColor || "#08070A";
+  const text = brand?.textColor || "#F4F1F5";
+  const muted = brand?.mutedColor || "#A6A1A9";
+  const logo = brand?.logoUrl || "/noctys-logo.webp";
+  const signature = brand?.signature || "TEAM NOCTYS  //  ENTER THE NIGHT";
+  if (preset === "blank") return { version:1,width,height,background,formatId:format.id,elements:[] };
   const portrait = height > width;
   const headline = preset === "victory" ? "VICTORY" : preset === "roster" ? "ROSTER 2026" : title;
   return {
-    version:1,width,height,background:"#08070A",formatId:format.id,
+    version:1,width,height,background,formatId:format.id,
     elements:[
       element({ type:"shape",name:"Halo violet",x:width*.08,y:height*.08,width:width*.84,height:height*.84,fill:"#24132D",radius:Math.min(width,height)*.08,opacity:.92 }),
-      element({ type:"shape",name:"Ligne d’accent",x:width*.08,y:height*.12,width:Math.max(12,width*.014),height:height*.7,fill:PURPLE,radius:8 }),
-      element({ type:"image",name:"Logo NOCTYS",x:portrait?width*.25:width*.08,y:portrait?height*.17:height*.22,width:portrait?width*.5:height*.48,height:portrait?width*.5:height*.48,src:"/noctys-logo.webp" }),
-      element({ type:"text",name:"Titre",x:width*.1,y:portrait?height*.58:height*.18,width:width*.8,height:height*.18,text:headline,fill:"#F4F1F5",fontSize:Math.round(Math.min(width,height)*(portrait?.095:.105)),fontWeight:700,align:portrait?"center":"right" }),
-      element({ type:"text",name:"Sous-titre",x:width*.1,y:portrait?height*.72:height*.72,width:width*.8,height:height*.08,text:subtitle,fill:PURPLE,fontSize:Math.round(Math.min(width,height)*.033),fontWeight:700,align:portrait?"center":"right" }),
-      element({ type:"text",name:"Signature",x:width*.1,y:height*.88,width:width*.8,height:height*.05,text:"TEAM NOCTYS  //  ENTER THE NIGHT",fill:"#A6A1A9",fontSize:Math.round(Math.min(width,height)*.018),fontWeight:600,align:"center" }),
+      element({ type:"shape",name:"Ligne d’accent",x:width*.08,y:height*.12,width:Math.max(12,width*.014),height:height*.7,fill:accent,radius:8 }),
+      element({ type:"image",name:"Logo NOCTYS",x:portrait?width*.25:width*.08,y:portrait?height*.17:height*.22,width:portrait?width*.5:height*.48,height:portrait?width*.5:height*.48,src:logo }),
+      element({ type:"text",name:"Titre",x:width*.1,y:portrait?height*.58:height*.18,width:width*.8,height:height*.18,text:headline,fill:text,fontSize:Math.round(Math.min(width,height)*(portrait?.095:.105)),fontWeight:700,align:portrait?"center":"right" }),
+      element({ type:"text",name:"Sous-titre",x:width*.1,y:portrait?height*.72:height*.72,width:width*.8,height:height*.08,text:subtitle,fill:accent,fontSize:Math.round(Math.min(width,height)*.033),fontWeight:700,align:portrait?"center":"right" }),
+      element({ type:"text",name:"Signature",x:width*.1,y:height*.88,width:width*.8,height:height*.05,text:signature,fill:muted,fontSize:Math.round(Math.min(width,height)*.018),fontWeight:600,align:"center" }),
     ],
   };
 }
@@ -27,12 +33,12 @@ export function customFormat(network: Network, width: number, height: number): S
 
 export function defaultFormat(network: Network) { return SOCIAL_FORMATS[network][0]; }
 
-export function documentFromCreation(creation?: Creation): CanvasDocument {
-  if (!creation) return createCanvasDocument(defaultFormat("instagram"),"blank");
+export function documentFromCreation(creation?: Creation,brand?:Partial<BrandSettings>): CanvasDocument {
+  if (!creation) return createCanvasDocument(defaultFormat("instagram"),"blank",undefined,undefined,brand);
   const payload = readCreationPayload(creation.body);
   if (payload.canvas) return structuredClone(payload.canvas);
   const format = defaultFormat(creation.network);
-  const document = createCanvasDocument(format, creation.kind === "texte" ? "blank" : "match", creation.title, payload.opponent || "NOCTYS · CS2");
+  const document = createCanvasDocument(format, creation.kind === "texte" ? "blank" : "match", creation.title, payload.opponent || "NOCTYS · CS2",brand);
   if (creation.kind === "texte") {
     document.elements.push(element({type:"text",name:"Publication",x:format.width*.1,y:format.height*.18,width:format.width*.8,height:format.height*.64,text:payload.result || creation.body,fill:"#F4F1F5",fontSize:48,fontWeight:600,align:"left"}));
   }

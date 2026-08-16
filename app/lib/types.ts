@@ -1,8 +1,9 @@
 export type Network = "instagram" | "x" | "tiktok" | "facebook";
 export type ContentKind = "image" | "texte";
 export type WorkStatus = "debute" | "en_cours" | "finie";
+export type ApprovalStatus = "draft" | "review" | "approved" | "scheduled" | "published";
 export type TemplateSource = "json" | "image";
-export type StudioView = "templates" | "sketchup" | "editor" | "logos" | "images" | "texts";
+export type StudioView = "templates" | "sketchup" | "editor" | "logos" | "images" | "texts" | "brand";
 export type SpaceView = "creations" | "calendar";
 export type AppView = StudioView | SpaceView;
 
@@ -13,8 +14,10 @@ export interface Task {
   network: Network;
   publishAt: string;
   status: WorkStatus;
+  approvalStatus: ApprovalStatus;
   creationId: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface Creation {
@@ -23,11 +26,40 @@ export interface Creation {
   network: Network;
   kind: ContentKind;
   status: WorkStatus;
+  approvalStatus: ApprovalStatus;
   publishAt: string | null;
   template: string;
   body: string;
   taskId: string | null;
   createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  versionCount: number;
+}
+
+export interface CreationVersion {
+  id: string;
+  creationId: string;
+  version: number;
+  title: string;
+  network: Network;
+  kind: ContentKind;
+  template: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface BrandSettings {
+  primaryColor: string;
+  backgroundColor: string;
+  textColor: string;
+  mutedColor: string;
+  headlineFont: string;
+  bodyFont: string;
+  logoUrl: string;
+  signature: string;
+  tone: string;
+  sponsors: string[];
   updatedAt: string;
 }
 
@@ -106,6 +138,8 @@ export interface WorkspaceData {
   tasks: Task[];
   creations: Creation[];
   templates: ExternalTemplate[];
+  trash: Creation[];
+  brand: BrandSettings;
 }
 
 export interface TaskDraft {
@@ -113,4 +147,13 @@ export interface TaskDraft {
   kind: ContentKind;
   network: Network;
   publishAt: string;
+}
+
+export interface CampaignDraft {
+  opponent: string;
+  competition: string;
+  bestOf: string;
+  matchAt: string;
+  sponsors: string;
+  networks: Network[];
 }

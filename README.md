@@ -16,6 +16,13 @@ Application de production social media pour TEAM NOCTYS : création de templates
 - Statuts Débuté / En cours / Finie et priorité calculée depuis la veille de publication
 - Ajout direct des publications dans Google Agenda
 - Persistance D1 et publication exemple NOCTYS vs ORION
+- Assistant Pack Match multiréseaux : une saisie génère les déclinaisons et tâches Instagram, X, TikTok et Facebook
+- Workflow éditorial Brouillon / À valider / Approuvée / Planifiée / Publiée, séparé de l’avancement de production
+- Historique durable des créations avec restauration d’une version antérieure
+- Corbeille récupérable et suppression définitive explicite
+- Brand Kit persistant : palette, signature, ton rédactionnel et sponsors appliqués aux nouveaux packs
+- Calendrier éditable : modification, duplication, suppression et déplacement des tâches par glisser-déposer
+- Palette de commandes Ctrl/⌘ K, centre de notifications et contrôles automatiques avant publication
 
 ## Développement
 

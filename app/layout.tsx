@@ -11,9 +11,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const incoming = await headers();
   const host = incoming.get("x-forwarded-host") ?? incoming.get("host") ?? "localhost:3000";
   const protocol = incoming.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  const image = new URL("/og.jpg", `${protocol}://${host}`).toString();
+  const image = new URL("/og-v21.png", `${protocol}://${host}`).toString();
   const title = "NOCTYS Creative Hub";
-  const description = "Studio créatif et calendrier éditorial de TEAM NOCTYS.";
+  const description = "Production social media NOCTYS : créez, validez et planifiez chaque campagne esport.";
   return {
     title,
     description,

@@ -70,3 +70,24 @@ test("ships the multi-format builder, canvas editor and bulk exports", async () 
   assert.match(exportsSource, /application\/zip/);
   assert.match(workspaceRoute, /delete_creation/);
 });
+
+test("ships the NOCTYS v2.1 production workflow", async () => {
+  const [workspaceRoute, workspaceDb, matchPack, brandKit, productivity, creations, preflight] = await Promise.all([
+    readFile(new URL("../app/api/workspace/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../db/workspace.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/MatchPackBuilder.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/BrandKitView.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/ProductivityOverlays.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/SpaceViews.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/preflight.ts", import.meta.url), "utf8"),
+  ]);
+  for (const action of ["campaign_pack", "task_update", "task_duplicate", "restore_creation", "restore_version", "brand_update"]) assert.match(workspaceRoute, new RegExp(action));
+  assert.match(workspaceDb, /creation_versions/);
+  assert.match(workspaceDb, /brand_settings/);
+  assert.match(matchPack, /PACK MATCH MULTIRÉSEAUX/);
+  assert.match(brandKit, /SPONSORS & RÈGLES/);
+  assert.match(productivity, /Palette de commandes/);
+  assert.match(creations, /text\/noctys-task/);
+  assert.match(creations, /HISTORIQUE/);
+  assert.match(preflight, /Logo NOCTYS/);
+});

@@ -4,8 +4,9 @@ import { useMemo, useRef, useState } from "react";
 import { ArrowRight, Check, FileJson, LayoutTemplate, LoaderCircle, Maximize2, ShieldCheck, Sparkles, UploadCloud } from "lucide-react";
 import { canvasBody, createCanvasDocument, customFormat } from "../lib/canvas";
 import { NETWORKS, SOCIAL_FORMATS } from "../lib/noctys";
-import type { Creation, ExternalTemplate, Network, SocialFormat } from "../lib/types";
+import type { BrandSettings, Creation, ExternalTemplate, Network, SocialFormat, Task } from "../lib/types";
 import { saveCreation } from "./StudioViews";
+import { MatchPackBuilder } from "./MatchPackBuilder";
 
 interface Props {
   templates: ExternalTemplate[];
@@ -13,6 +14,8 @@ interface Props {
   onCreated: (creation: Creation) => void;
   onEdit: (creation: Creation) => void;
   notify: (message: string) => void;
+  brand: BrandSettings;
+  onPackCreated: (tasks:Task[],creations:Creation[]) => void;
 }
 
 type Preset = "match"|"victory"|"roster"|"blank";
@@ -24,7 +27,7 @@ const PRESETS: Array<{id:Preset;name:string;description:string;tag:string}> = [
   {id:"blank",name:"Canvas vierge",description:"Composition entièrement libre",tag:"PERSONNALISÉ"},
 ];
 
-export function TemplatesView({ templates, onTemplateImported, onCreated, onEdit, notify }: Props) {
+export function TemplatesView({ templates, onTemplateImported, onCreated, onEdit, notify, brand, onPackCreated }: Props) {
   const [network,setNetwork]=useState<Network>("instagram");
   const [formatId,setFormatId]=useState(SOCIAL_FORMATS.instagram[0].id);
   const [custom,setCustom]=useState(false);
@@ -46,7 +49,7 @@ export function TemplatesView({ templates, onTemplateImported, onCreated, onEdit
   const create = async () => {
     setSaving(true);
     try {
-      const document=createCanvasDocument(selectedFormat,preset,title,subtitle);
+      const document=createCanvasDocument(selectedFormat,preset,title,subtitle,brand);
       if(activeExternal?.assetUrl) document.elements.unshift({id:crypto.randomUUID(),type:"image",name:"Template importé",x:0,y:0,width:document.width,height:document.height,rotation:0,opacity:.72,src:activeExternal.assetUrl});
       const creation=await saveCreation({title:title||"Création NOCTYS",network,kind:"image",status:"debute",publishAt:null,template:activeExternal?`external:${activeExternal.id}`:`canvas:${preset}`,body:canvasBody(document,{title,assetUrl:activeExternal?.assetUrl||undefined})});
       onCreated(creation);onEdit(creation);notify("Template créé et ouvert dans Sketchup.");
@@ -61,6 +64,8 @@ export function TemplatesView({ templates, onTemplateImported, onCreated, onEdit
 
   return <div className="view-stack fade-in template-builder">
     <section className="intro compact-intro"><div><span className="eyebrow">NOCTYS CONTENT SYSTEM — 01</span><h1>CHOISIR LE<br/><em>BON FORMAT.</em></h1></div><p>Partez d’une composition préremplie ou d’un canvas vierge, aux dimensions adaptées à chaque réseau.</p></section>
+
+    <MatchPackBuilder brand={brand} onCreated={onPackCreated} notify={notify}/>
 
     <section className="builder-block"><div className="builder-step"><span>01</span><div><strong>Réseau</strong><small>Choisissez la destination de la publication</small></div></div><div className="network-pills builder-networks">{(Object.keys(NETWORKS) as Network[]).map((item)=><button key={item} className={network===item?"active":""} onClick={()=>changeNetwork(item)}><span>{NETWORKS[item].short}</span>{NETWORKS[item].label}</button>)}</div></section>
 

@@ -6,6 +6,7 @@ import {
   PenLine,
   PencilRuler,
   Shapes,
+  SwatchBook,
   Sparkles,
 } from "lucide-react";
 import type { AppView } from "../lib/types";
@@ -22,6 +23,7 @@ const studioItems = [
   { id: "logos" as const, label: "Générateur de logos", icon: Shapes },
   { id: "images" as const, label: "Générateur d’images", icon: ImagePlus },
   { id: "texts" as const, label: "Générateur de textes", icon: Sparkles },
+  { id: "brand" as const, label: "Brand Kit", icon: SwatchBook },
 ];
 
 const spaceItems = [

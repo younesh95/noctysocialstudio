@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Check, Copy, Download, ImagePlus, Layers3, LoaderCircle, MousePointer2, Redo2, Save, Shapes, Trash2, Type, Undo2, UploadCloud } from "lucide-react";
 import { canvasBody, documentFromCreation, drawCanvasDocument, element, readCreationPayload } from "../lib/canvas";
 import { NETWORKS } from "../lib/noctys";
-import type { CanvasDocument, CanvasElement, Creation, ExternalTemplate, Network } from "../lib/types";
+import type { BrandSettings, CanvasDocument, CanvasElement, Creation, ExternalTemplate, Network } from "../lib/types";
 import { saveCreation } from "./StudioViews";
 
 interface Props {
@@ -12,10 +12,11 @@ interface Props {
   onSaved: (creation: Creation) => void;
   onTemplateImported: (template: ExternalTemplate) => void;
   notify: (message: string) => void;
+  brand: BrandSettings;
 }
 
-export function SketchupView({ creation, onSaved, onTemplateImported, notify }: Props) {
-  const [document,setDocument]=useState<CanvasDocument>(()=>documentFromCreation(creation));
+export function SketchupView({ creation, onSaved, onTemplateImported, notify, brand }: Props) {
+  const [document,setDocument]=useState<CanvasDocument>(()=>documentFromCreation(creation,brand));
   const [title,setTitle]=useState(creation?.title||"Nouvelle création NOCTYS");
   const [network,setNetwork]=useState<Network>(creation?.network||"instagram");
   const [selectedId,setSelectedId]=useState<string>();
@@ -25,7 +26,7 @@ export function SketchupView({ creation, onSaved, onTemplateImported, notify }: 
   const [future,setFuture]=useState<CanvasDocument[]>([]);
   const [uploading,setUploading]=useState(false);
   const canvasRef=useRef<HTMLCanvasElement>(null);
-  const dragRef=useRef<{id:string;offsetX:number;offsetY:number;start:CanvasDocument}>();
+  const dragRef=useRef<{id:string;offsetX:number;offsetY:number;start:CanvasDocument}|undefined>(undefined);
   const fileRef=useRef<HTMLInputElement>(null);
   const selected=useMemo(()=>document.elements.find((item)=>item.id===selectedId),[document.elements,selectedId]);
 
