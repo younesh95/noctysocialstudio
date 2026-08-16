@@ -26,6 +26,3 @@ pnpm lint
 
 La base locale est créée automatiquement au premier appel à `/api/workspace`. Le schéma Drizzle se trouve dans `db/schema.ts` et la migration initiale dans `drizzle/0000_noctys_workspace.sql`.
 
-## Génération assistée
-
-Le prototype fournit un mode démo déterministe afin de rester utilisable sans secret côté client. Pour une mise en production réelle, connecter les fournisseurs ChatGPT/Gemini exclusivement côté serveur et stocker les clés dans les variables d’environnement de l’hébergeur — jamais dans le code ni dans le navigateur.
