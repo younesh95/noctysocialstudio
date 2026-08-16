@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import type { ContentKind, Creation, Network, Task, WorkStatus } from "../app/lib/types";
+import type { ContentKind, Creation, ExternalTemplate, ExternalTemplateConfig, Network, Task, TemplateSource, WorkStatus } from "../app/lib/types";
 
 interface TaskRow {
   id: string; name: string; kind: ContentKind; network: Network; publish_at: string;
@@ -9,6 +9,11 @@ interface CreationRow {
   id: string; title: string; network: Network; kind: ContentKind; status: WorkStatus;
   publish_at: string | null; template: string; body: string; task_id: string | null;
   created_at: string; updated_at: string;
+}
+export interface ImportedTemplateRow {
+  id: string; name: string; network: Network; kind: ContentKind; source_type: TemplateSource;
+  file_name: string; mime_type: string; asset_key: string | null; width: number; height: number;
+  config_json: string; created_at: string; updated_at: string;
 }
 
 export function getWorkspaceDb() {
@@ -46,6 +51,22 @@ export async function ensureWorkspaceSchema() {
     db.prepare("CREATE INDEX IF NOT EXISTS idx_tasks_status_publish_at ON tasks(status, publish_at)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_creations_publish_at ON creations(publish_at)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_creations_task_id ON creations(task_id)"),
+    db.prepare(`CREATE TABLE IF NOT EXISTS imported_templates (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      network TEXT NOT NULL CHECK(network IN ('instagram','x','tiktok','facebook')),
+      kind TEXT NOT NULL DEFAULT 'image' CHECK(kind IN ('image','texte')),
+      source_type TEXT NOT NULL CHECK(source_type IN ('json','image')),
+      file_name TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      asset_key TEXT,
+      width INTEGER NOT NULL,
+      height INTEGER NOT NULL,
+      config_json TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`),
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_imported_templates_network_created_at ON imported_templates(network, created_at)"),
   ]);
   await db.prepare("PRAGMA optimize").run();
 }
@@ -69,15 +90,29 @@ export async function seedDemoIfEmpty() {
 
 export async function listWorkspace() {
   const db = getWorkspaceDb();
-  const [taskRows, creationRows] = await db.batch<TaskRow | CreationRow>([
+  const [taskRows, creationRows, templateRows] = await db.batch<TaskRow | CreationRow | ImportedTemplateRow>([
     db.prepare("SELECT * FROM tasks ORDER BY publish_at ASC, created_at DESC"),
     db.prepare("SELECT * FROM creations ORDER BY COALESCE(publish_at, updated_at) DESC, updated_at DESC"),
+    db.prepare("SELECT * FROM imported_templates ORDER BY created_at DESC"),
   ]);
   return {
     tasks: (taskRows.results as TaskRow[]).map(toTask),
     creations: (creationRows.results as CreationRow[]).map(toCreation),
+    templates: (templateRows.results as ImportedTemplateRow[]).map(toExternalTemplate),
   };
+}
+
+export async function getImportedTemplateRow(id: string) {
+  return getWorkspaceDb().prepare("SELECT * FROM imported_templates WHERE id=?").bind(id).first<ImportedTemplateRow>();
 }
 
 export const toTask = (row: TaskRow): Task => ({ id:row.id,name:row.name,kind:row.kind,network:row.network,publishAt:row.publish_at,status:row.status,creationId:row.creation_id,createdAt:row.created_at });
 export const toCreation = (row: CreationRow): Creation => ({ id:row.id,title:row.title,network:row.network,kind:row.kind,status:row.status,publishAt:row.publish_at,template:row.template,body:row.body,taskId:row.task_id,createdAt:row.created_at,updatedAt:row.updated_at });
+export const toExternalTemplate = (row: ImportedTemplateRow): ExternalTemplate => ({
+  id:row.id,name:row.name,network:row.network,kind:row.kind,sourceType:row.source_type,fileName:row.file_name,mimeType:row.mime_type,
+  assetUrl:row.asset_key?`/api/templates/${row.id}/asset`:null,width:row.width,height:row.height,config:parseTemplateConfig(row.config_json),createdAt:row.created_at,updatedAt:row.updated_at,
+});
+
+function parseTemplateConfig(value: string): ExternalTemplateConfig {
+  try { return JSON.parse(value) as ExternalTemplateConfig; } catch { return {}; }
+}

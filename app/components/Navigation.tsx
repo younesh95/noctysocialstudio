@@ -4,6 +4,7 @@ import {
   ImagePlus,
   LayoutTemplate,
   PenLine,
+  PencilRuler,
   Shapes,
   Sparkles,
 } from "lucide-react";
@@ -16,6 +17,7 @@ interface NavigationProps {
 
 const studioItems = [
   { id: "templates" as const, label: "Templates", icon: LayoutTemplate },
+  { id: "sketchup" as const, label: "Sketchup", icon: PencilRuler },
   { id: "editor" as const, label: "Éditeur", icon: PenLine },
   { id: "logos" as const, label: "Générateur de logos", icon: Shapes },
   { id: "images" as const, label: "Générateur d’images", icon: ImagePlus },
